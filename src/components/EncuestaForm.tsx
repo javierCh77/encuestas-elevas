@@ -18,39 +18,81 @@ export default function EncuestaForm() {
     dni: "",
     nombreEmpresa: "",
     respuestas: {
-      trabajoValorado: "1",
-      claridadObjetivos: "1",
-      comodidadFeedback: "1",
+      climaComodidadEquipo: "1",
+      climaAmbienteSaludable: "1",
+      climaEquilibrioVida: "1",
+      liderazgoInformacionClara: "1",
+      liderazgoConfianzaDireccion: "1",
+      liderazgoOpinionesEscuchadas: "1",
+      recursosSatisfaccionSalario: "1",
+      recursosCompensacionJusta: "1",
+      desarrolloOportunidades: "1",
+      desarrolloMotivacion: "1",
+      desarrolloAporteSignificativo: "1",
+      desarrolloContinuarEmpresa: "1",
+      reconocimientoValorado: "1",
+      reconocimientoDisfruteTrabajo: "1",
       culturaUnaPalabra: "",
-      recomendariaEmpresa: "1",
-      recursosDisponibles: "1",
       capacitacionesUtiles: "true",
-      equilibrioVidaLaboral: "1",
-      opinionTenidaEnCuenta: "1",
-      oportunidadesDesarrollo: "1",
     },
   });
 
-  const preguntasLikert = [
-    ["trabajoValorado", "¿Te sentís valorado/a en tu trabajo?"],
-    ["claridadObjetivos", "¿Tenés claridad sobre tus objetivos?"],
-    ["comodidadFeedback", "¿Te sentís cómodo/a recibiendo feedback?"],
-    ["recomendariaEmpresa", "¿Recomendarías la empresa?"],
-    ["recursosDisponibles", "¿Contás con los recursos necesarios?"],
-    ["equilibrioVidaLaboral", "¿Sentís equilibrio vida personal/laboral?"],
-    ["opinionTenidaEnCuenta", "¿Sentís que tu opinión es tenida en cuenta?"],
-    ["oportunidadesDesarrollo", "¿Tenés oportunidades de desarrollo?"],
+  const preguntasPorCategoria = [
+    {
+      titulo: "1. Clima Laboral",
+      preguntas: [
+        ["climaComodidadEquipo", "¿Te sentís cómodo/a y acompañado/a por tu equipo y tu supervisor?"],
+        ["climaAmbienteSaludable", "¿La empresa promueve un ambiente de trabajo saludable y seguro?"],
+        ["climaEquilibrioVida", "¿Percibís un buen equilibrio entre el trabajo y tu vida personal?"],
+      ],
+    },
+    {
+      titulo: "2. Liderazgo y Comunicación",
+      preguntas: [
+        ["liderazgoInformacionClara", "¿Recibís información clara sobre cambios y decisiones importantes en la empresa?"],
+        ["liderazgoConfianzaDireccion", "¿Confiás en la dirección y el liderazgo de la organización?"],
+        ["liderazgoOpinionesEscuchadas", "¿Sentís que tus opiniones y sugerencias son escuchadas y consideradas?"],
+      ],
+    },
+    {
+      titulo: "3. Recursos y Beneficios",
+      preguntas: [
+        ["recursosSatisfaccionSalario", "¿Estás satisfecho/a con tu salario y los beneficios que recibís?"],
+        ["recursosCompensacionJusta", "¿Considerás que tu compensación es justa en relación con tus tareas y responsabilidades?"],
+      ],
+    },
+    {
+      titulo: "4. Desarrollo y Motivación",
+      preguntas: [
+        ["desarrolloOportunidades", "¿Sentís que tenés oportunidades de crecimiento y desarrollo profesional en la empresa?"],
+        ["desarrolloMotivacion", "¿Te sentís motivado/a para asistir a tu trabajo cada día?"],
+        ["desarrolloAporteSignificativo", "¿Percibís que tu trabajo genera un aporte significativo a la organización?"],
+        ["desarrolloContinuarEmpresa", "¿Te gustaría continuar trabajando en esta empresa a largo plazo?"],
+      ],
+    },
+    {
+      titulo: "5. Reconocimiento y Satisfacción General",
+      preguntas: [
+        ["reconocimientoValorado", "¿Te sentís valorado/a y reconocido/a por tu trabajo?"],
+        ["reconocimientoDisfruteTrabajo", "¿Disfrutás del trabajo que realizás?"],
+      ],
+    },
   ];
 
-  const totalPreguntas = 4 + preguntasLikert.length + 2;
+  const totalPreguntas =
+    4 +
+    preguntasPorCategoria.reduce((acc, cat) => acc + cat.preguntas.length, 0) +
+    2;
 
   const respuestasCompletadas = [
     form.nombre,
     form.apellido,
     form.dni,
     form.nombreEmpresa,
-    ...preguntasLikert.map(
-      ([key]) => form.respuestas[key as keyof typeof form.respuestas]
+    ...preguntasPorCategoria.flatMap((cat) =>
+      cat.preguntas.map(
+        ([key]) => form.respuestas[key as keyof typeof form.respuestas]
+      )
     ),
     form.respuestas.culturaUnaPalabra,
     form.respuestas.capacitacionesUtiles,
@@ -87,14 +129,13 @@ export default function EncuestaForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Datos enviados:", form);
     try {
       await api.post("/respuesta-encuesta", form);
-      toast.success(" Encuesta enviada correctamente");
+      toast.success("Encuesta enviada correctamente");
       setTimeout(() => router.push("/gracias"), 1500);
     } catch (error) {
       console.error("Error al enviar:", error);
-      toast.error("❌ Error al enviar la encuesta dni ya registrado");
+      toast.error("❌ Error al enviar la encuesta. DNI ya registrado");
     }
   };
 
@@ -192,31 +233,38 @@ export default function EncuestaForm() {
                     <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
                       📊 Preguntas
                     </h3>
-                    {preguntasLikert.map(([key, pregunta]) => (
-                      <div key={key} className="space-y-2">
-                        <p className="font-medium">{pregunta}</p>
-                        <div className="flex gap-2 flex-wrap">
-                          {[1, 2, 3, 4, 5].map((n) => (
-                            <label
-                              key={n}
-                              className="inline-flex items-center gap-1 text-sm"
-                            >
-                              <input
-                                type="radio"
-                                name={key}
-                                value={n.toString()}
-                                checked={
-                                  form.respuestas[
-                                    key as keyof typeof form.respuestas
-                                  ] === n.toString()
-                                }
-                                onChange={handleChange}
-                                className="accent-[#1F5D89]"
-                              />
-                              {n}
-                            </label>
-                          ))}
-                        </div>
+                    {preguntasPorCategoria.map((categoria) => (
+                      <div key={categoria.titulo}>
+                        <h4 className="font-semibold text-lg mt-4 mb-2">
+                          {categoria.titulo}
+                        </h4>
+                        {categoria.preguntas.map(([key, pregunta]) => (
+                          <div key={key} className="space-y-2 mb-4">
+                            <p className="font-medium">{pregunta}</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {[1, 2, 3, 4, 5].map((n) => (
+                                <label
+                                  key={n}
+                                  className="inline-flex items-center gap-1 text-sm"
+                                >
+                                  <input
+                                    type="radio"
+                                    name={key}
+                                    value={n.toString()}
+                                    checked={
+                                      form.respuestas[
+                                        key as keyof typeof form.respuestas
+                                      ] === n.toString()
+                                    }
+                                    onChange={handleChange}
+                                    className="accent-[#1F5D89]"
+                                  />
+                                  {n}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -247,7 +295,7 @@ export default function EncuestaForm() {
                     </h3>
                     <div>
                       <label className="block mb-1 font-medium">
-                        Cultura en una palabra:
+                        Define a la empresa que trabajas en una palabra
                       </label>
                       <input
                         type="text"
